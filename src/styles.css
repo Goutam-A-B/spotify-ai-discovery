@@ -33,21 +33,23 @@ input { font-family: inherit; }
 /* ---------- Stage + phone frame ---------- */
 .stage {
   min-height: 100dvh;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 10px; padding: 12px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  padding: 0;
 }
-.stage__caption { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12.5px; letter-spacing: .3px; }
-.stage__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); }
-.stage__hint { color: var(--muted-2); font-size: 12px; }
+.stage__caption, .stage__hint { display: none; }
 
-/* Real-phone proportions: comfortable width, uses the full viewport height so
-   it reads like an actual device rather than a short box. */
+/* Fixed phone design resolution (412×892). We scale the whole device to fit
+   the viewport so the entire screen is always visible — never a cramped box. */
 .phone {
   position: relative;
-  width: min(412px, calc(100vw - 20px));
-  height: min(892px, calc(100dvh - 34px));
+  flex-shrink: 0;
+  width: 412px;
+  height: 892px;
+  transform: scale(min(1, calc((100dvh - 20px) / 892px), calc((100vw - 16px) / 412px)));
+  transform-origin: center;
   background: var(--bg);
-  border-radius: 46px;
+  border-radius: 48px;
   border: 11px solid #0c0c0f;
   box-shadow: 0 0 0 2px #1c1c22, 0 40px 120px rgba(0,0,0,.7), inset 0 0 2px rgba(255,255,255,.1);
   overflow: hidden;
@@ -433,9 +435,12 @@ input { font-family: inherit; }
    Small screens: full-bleed
    ============================================================ */
 @media (max-width: 460px) {
-  .stage { padding: 0; gap: 0; }
-  .stage__caption, .stage__hint { display: none; }
-  .phone { width: 100%; height: 100dvh; border-radius: 0; border: none; box-shadow: none; }
+  .stage { padding: 0; }
+  .phone {
+    width: 100vw; height: 100dvh;
+    transform: none;
+    border-radius: 0; border: none; box-shadow: none;
+  }
   .phone__notch { display: none; }
   .statusbar { height: 42px; }
 }

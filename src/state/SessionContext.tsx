@@ -23,8 +23,9 @@ export interface State {
   playedIds: string[];
 }
 
-// Seed a default balanced session so the surface is never empty (matches the mockup).
-const seed = buildSession(null, "For you", 0.5, 12);
+// Curated default queue so the first screen reads like the design: an
+// atmospheric-indie "now playing" with matching discoveries up next.
+const DEFAULT_QUEUE = ["f1", "f2", "f3", "f4", "f5", "s33", "s30", "s3", "s15", "s22", "s7", "s11"];
 
 const initialState: State = {
   tab: "discover",
@@ -33,13 +34,13 @@ const initialState: State = {
   moodId: null,
   moodLabel: "For you",
   discoveryLevel: 0.5,
-  plan: seed,
-  queue: seed.queue,
+  plan: null,
+  queue: DEFAULT_QUEUE,
   currentIndex: 0,
   isPlaying: false,
   saved: [],
   feedback: {},
-  playedIds: seed.queue.length ? [seed.queue[0]] : [],
+  playedIds: [DEFAULT_QUEUE[0]],
 };
 
 type Action =

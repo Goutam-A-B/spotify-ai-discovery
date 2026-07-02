@@ -76,12 +76,12 @@ export function NowPlaying() {
           <span className={"eyebrow " + eyebrow.cls}>{eyebrow.text}</span>
           <div className="np__title">{song.title}</div>
           <div className="np__genre">
-            {pretty(song.tags[0])} · {song.language}
+            {song.genre ?? pretty(song.tags[0])} • {song.year ?? song.language}
           </div>
           <div className="np__similar">
             <SoundBars size={13} className="np__eq" />
             <span>
-              Similar to your <b>{song.similarArtists[0]}</b>
+              Similar energy to your <b>{song.similarArtists[0]}</b>
               {song.similarArtists[1] ? <> and <b>{song.similarArtists[1]}</b></> : null}
             </span>
           </div>

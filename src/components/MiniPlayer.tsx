@@ -9,7 +9,9 @@ export function MiniPlayer() {
   const { state, dispatch } = useSession();
   const { progress, duration } = usePlayback();
 
-  if (state.stage !== "browse") return null;
+  // The Discover tab already shows the full NOW PLAYING card, so the docked
+  // bar only appears when browsing the other tabs.
+  if (state.stage !== "browse" || state.tab === "discover") return null;
   const id = state.queue[state.currentIndex];
   const song = id ? SONG_BY_ID[id] : null;
   if (!song) return null;

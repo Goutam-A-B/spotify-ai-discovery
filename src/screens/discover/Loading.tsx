@@ -7,7 +7,7 @@ import { SparkleIcon } from "../../components/icons";
 export function Loading() {
   const { state } = useSession();
   const mood = state.moodId ? MOOD_BY_ID[state.moodId] : null;
-  const label = state.moodText.trim() || "Your vibe";
+  const label = state.moodText.trim() || "For you";
 
   const steps = [
     `Reading the moment: “${label}”`,
@@ -18,17 +18,17 @@ export function Loading() {
 
   const [active, setActive] = useState(0);
   useEffect(() => {
-    const t = window.setInterval(() => setActive((a) => Math.min(a + 1, steps.length)), 520);
+    const t = window.setInterval(() => setActive((a) => Math.min(a + 1, steps.length)), 480);
     return () => window.clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div className="screen loading" style={{ ["--accent" as string]: mood?.accent[0] ?? "#1db954" }}>
+    <div className="overlay loading" style={{ ["--accent" as string]: mood?.accent[0] ?? "#1db954" }}>
       <div className="loading__orb">
         <span className="loading__ring" />
         <span className="loading__ring loading__ring--2" />
-        <SparkleIcon size={40} className="loading__spark" />
+        <SparkleIcon size={38} className="loading__spark" />
       </div>
 
       <h2 className="loading__title">Building your session</h2>
@@ -42,22 +42,6 @@ export function Loading() {
           </li>
         ))}
       </ul>
-
-      <div className="loading__json">
-        <div className="loading__json-title">AI input</div>
-        <pre>
-{`{
-  "mood": "${label}",
-  "energy": ${(mood?.energy ?? 0.5).toFixed(2)},
-  "language": "${mood?.languageHint ?? "Any"}",
-  "discovery_level": ${state.discoveryLevel.toFixed(2)},
-  "favorite_artists": [
-    "Mohit Chauhan", "Atif Aslam",
-    "Anuv Jain", "Sid Sriram"
-  ]
-}`}
-        </pre>
-      </div>
     </div>
   );
 }

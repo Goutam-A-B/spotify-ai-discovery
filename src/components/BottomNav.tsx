@@ -1,12 +1,12 @@
 import { useSession, type Tab } from "../state/SessionContext";
-import { HomeIcon, SearchIcon, SparkleIcon, LibraryIcon, PlusIcon } from "./icons";
+import { HomeIcon, SearchIcon, SparkleIcon, LibraryIcon, CreateIcon } from "./icons";
 
 const ITEMS: { tab: Tab; label: string; icon: (active: boolean) => React.ReactNode }[] = [
-  { tab: "home", label: "Home", icon: () => <HomeIcon size={24} /> },
+  { tab: "home", label: "Home", icon: (a) => <HomeIcon size={24} filled={a} /> },
   { tab: "search", label: "Search", icon: () => <SearchIcon size={24} /> },
   { tab: "discover", label: "Discover", icon: () => <SparkleIcon size={24} /> },
-  { tab: "library", label: "Your Library", icon: () => <LibraryIcon size={24} /> },
-  { tab: "create", label: "Create", icon: () => <PlusIcon size={24} /> },
+  { tab: "library", label: "Your Library", icon: (a) => <LibraryIcon size={24} filled={a} /> },
+  { tab: "create", label: "Create", icon: () => <CreateIcon size={24} /> },
 ];
 
 export function BottomNav() {
@@ -20,9 +20,7 @@ export function BottomNav() {
           <button
             key={it.tab}
             className={
-              "bottomnav__item" +
-              (active ? " is-active" : "") +
-              (isDiscover ? " bottomnav__item--discover" : "")
+              "bottomnav__item" + (active ? " is-active" : "") + (isDiscover ? " bottomnav__item--discover" : "")
             }
             onClick={() => dispatch({ type: "SET_TAB", tab: it.tab })}
           >

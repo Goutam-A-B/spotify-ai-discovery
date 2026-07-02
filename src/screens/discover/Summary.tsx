@@ -3,14 +3,14 @@ import { useSession } from "../../state/SessionContext";
 import { SONG_BY_ID } from "../../data/songs";
 import { MOOD_BY_ID } from "../../data/moods";
 import { AlbumArt } from "../../components/AlbumArt";
-import { SparkleIcon, HeartIcon, PlusIcon, CheckIcon } from "../../components/icons";
+import { SparkleIcon, HeartIcon, PlusIcon, CheckIcon, CloseIcon } from "../../components/icons";
 
 export function Summary() {
   const { state, dispatch } = useSession();
   const [playlistMade, setPlaylistMade] = useState(false);
 
   const mood = state.moodId ? MOOD_BY_ID[state.moodId] : null;
-  const moodLabel = state.moodText.trim() || "Your vibe";
+  const moodLabel = state.moodText.trim() || "For you";
 
   const stats = useMemo(() => {
     const played = state.playedIds.map((id) => SONG_BY_ID[id]).filter(Boolean);
@@ -18,26 +18,17 @@ export function Summary() {
     const artists = new Set(discovered.map((s) => s.artist));
     const sessionIds = new Set([...state.playedIds, ...state.queue]);
     const saved = state.saved.filter((id) => sessionIds.has(id));
-    const loved = Object.entries(state.feedback).filter(([, v]) => v === "love" || v === "more").length;
-    return {
-      heard: played.length,
-      discovered: discovered.length,
-      artists: artists.size,
-      saved,
-      loved,
-    };
+    const signals = Object.keys(state.feedback).length;
+    return { discovered: discovered.length, artists: artists.size, saved, signals };
   }, [state.playedIds, state.queue, state.saved, state.feedback]);
 
-  const makePlaylist = () => {
-    // simulate saving unsaved session songs + creating a playlist
-    setPlaylistMade(true);
-  };
-
   return (
-    <div className="screen summary" style={{ ["--accent" as string]: mood?.accent[0] ?? "#1db954" }}>
-      <div className="summary__badge">
-        <SparkleIcon size={30} />
-      </div>
+    <div className="overlay summary" style={{ ["--accent" as string]: mood?.accent[0] ?? "#1db954" }}>
+      <button className="summary__close iconbtn" onClick={() => dispatch({ type: "CLOSE_SUMMARY" })} aria-label="Close">
+        <CloseIcon size={24} />
+      </button>
+
+      <div className="summary__badge"><SparkleIcon size={30} /></div>
       <h1 className="summary__title">Session complete</h1>
       <p className="summary__mood">{mood ? `${mood.emoji} ${mood.label}` : moodLabel}</p>
 
@@ -45,12 +36,7 @@ export function Summary() {
         <Stat n={stats.discovered} label="new songs discovered" />
         <Stat n={stats.artists} label="new artists found" />
         <Stat n={stats.saved.length} label="songs saved" />
-        <Stat n={stats.loved} label="positive signals" />
-      </div>
-
-      <div className="summary__trained">
-        <SparkleIcon size={16} />
-        Your {stats.loved + Object.keys(state.feedback).length} signals trained the next session
+        <Stat n={stats.signals} label="signals trained" />
       </div>
 
       {stats.saved.length > 0 ? (
@@ -80,15 +66,15 @@ export function Summary() {
         {stats.saved.length > 0 &&
           (playlistMade ? (
             <div className="summary__made">
-              <CheckIcon size={18} /> Added to “{moodLabel} · Discovery” playlist
+              <CheckIcon size={18} /> Added to “{moodLabel} · Discovery”
             </div>
           ) : (
-            <button className="btn-primary btn-primary--full" onClick={makePlaylist}>
+            <button className="btn-primary" onClick={() => setPlaylistMade(true)}>
               <PlusIcon size={20} />
               Add {stats.saved.length} to a playlist
             </button>
           ))}
-        <button className="btn-ghost btn-ghost--full" onClick={() => dispatch({ type: "NEW_SESSION" })}>
+        <button className="btn-ghost" onClick={() => dispatch({ type: "NEW_SESSION" })}>
           Start a new session
         </button>
       </div>

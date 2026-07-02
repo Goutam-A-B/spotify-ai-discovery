@@ -30,7 +30,7 @@ export function PlaybackProvider({ children }: { children: ReactNode }) {
 
   // run the clock while playing on the player
   useEffect(() => {
-    if (!state.isPlaying || state.stage !== "player") return;
+    if (!state.isPlaying || state.stage !== "browse") return;
     last.current = performance.now();
     let raf = 0;
     const tick = () => {

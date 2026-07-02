@@ -3,7 +3,8 @@ import { SONG_BY_ID } from "../data/songs";
 import { buildSession, similarTo, type SessionPlan } from "../lib/recommender";
 
 export type Tab = "home" | "search" | "discover" | "library" | "create";
-export type Stage = "home" | "loading" | "player" | "summary";
+/** The Discover surface is always "browse"; loading & summary are overlays on top. */
+export type Stage = "browse" | "loading" | "summary";
 export type Feedback = "love" | "more" | "down" | "skip";
 
 export interface State {
@@ -11,6 +12,7 @@ export interface State {
   stage: Stage;
   moodText: string;
   moodId: string | null;
+  moodLabel: string;
   discoveryLevel: number; // 0..1
   plan: SessionPlan | null;
   queue: string[];
@@ -18,22 +20,26 @@ export interface State {
   isPlaying: boolean;
   saved: string[];
   feedback: Record<string, Feedback>;
-  playedIds: string[]; // every track that became "current"
+  playedIds: string[];
 }
+
+// Seed a default balanced session so the surface is never empty (matches the mockup).
+const seed = buildSession(null, "For you", 0.5, 12);
 
 const initialState: State = {
   tab: "discover",
-  stage: "home",
+  stage: "browse",
   moodText: "",
   moodId: null,
-  discoveryLevel: 0.6,
-  plan: null,
-  queue: [],
+  moodLabel: "For you",
+  discoveryLevel: 0.5,
+  plan: seed,
+  queue: seed.queue,
   currentIndex: 0,
   isPlaying: false,
   saved: [],
   feedback: {},
-  playedIds: [],
+  playedIds: seed.queue.length ? [seed.queue[0]] : [],
 };
 
 type Action =
@@ -51,12 +57,12 @@ type Action =
   | { type: "FEEDBACK"; kind: Feedback }
   | { type: "TOGGLE_SAVE"; id: string }
   | { type: "END_SESSION" }
+  | { type: "CLOSE_SUMMARY" }
   | { type: "NEW_SESSION" };
 
-function withPlayed(state: State, index: number): string[] {
-  const id = state.queue[index];
-  if (!id) return state.playedIds;
-  return state.playedIds.includes(id) ? state.playedIds : [...state.playedIds, id];
+function pushPlayed(list: string[], id: string | undefined): string[] {
+  if (!id || list.includes(id)) return list;
+  return [...list, id];
 }
 
 function reducer(state: State, action: Action): State {
@@ -68,7 +74,7 @@ function reducer(state: State, action: Action): State {
       return { ...state, moodText: action.text };
 
     case "SET_MOOD":
-      return { ...state, moodId: action.id, moodText: action.label };
+      return { ...state, moodId: action.id, moodText: action.label, moodLabel: action.label || "For you" };
 
     case "SET_DISCOVERY":
       return { ...state, discoveryLevel: action.value };
@@ -79,7 +85,8 @@ function reducer(state: State, action: Action): State {
     case "SESSION_READY":
       return {
         ...state,
-        stage: "player",
+        stage: "browse",
+        tab: "discover",
         plan: action.plan,
         queue: action.plan.queue,
         currentIndex: 0,
@@ -97,55 +104,39 @@ function reducer(state: State, action: Action): State {
     case "NEXT": {
       const next = state.currentIndex + 1;
       if (next >= state.queue.length) {
-        return { ...state, stage: "summary", isPlaying: false, tab: "discover" };
+        return { ...state, stage: "summary", tab: "discover", isPlaying: false };
       }
-      return { ...state, currentIndex: next, isPlaying: true, playedIds: withPlayed(state, next) };
+      return { ...state, currentIndex: next, isPlaying: true, playedIds: pushPlayed(state.playedIds, state.queue[next]) };
     }
 
-    case "PREV": {
-      const prev = Math.max(0, state.currentIndex - 1);
-      return { ...state, currentIndex: prev, isPlaying: true };
-    }
+    case "PREV":
+      return { ...state, currentIndex: Math.max(0, state.currentIndex - 1), isPlaying: true };
 
     case "GOTO": {
       const index = Math.max(0, Math.min(state.queue.length - 1, action.index));
-      return { ...state, currentIndex: index, isPlaying: true, playedIds: withPlayed(state, index) };
+      return { ...state, currentIndex: index, isPlaying: true, playedIds: pushPlayed(state.playedIds, state.queue[index]) };
     }
 
     case "FEEDBACK": {
       const currentId = state.queue[state.currentIndex];
       if (!currentId) return state;
       const feedback = { ...state.feedback, [currentId]: action.kind };
-
-      const played = new Set(state.playedIds);
-      const inQueue = new Set(state.queue);
-      const exclude = new Set<string>([...played, ...inQueue]);
-
+      const exclude = new Set<string>([...state.playedIds, ...state.queue]);
       let queue = [...state.queue];
 
       if (action.kind === "more" || action.kind === "love") {
-        // AI refines: inject similar tracks right after the current one
         const n = action.kind === "more" ? 2 : 1;
-        const additions = similarTo(currentId, exclude)
-          .slice(0, n)
-          .map((s) => s.id);
+        const additions = similarTo(currentId, exclude).slice(0, n).map((s) => s.id);
         if (additions.length) {
-          queue = [
-            ...queue.slice(0, state.currentIndex + 1),
-            ...additions,
-            ...queue.slice(state.currentIndex + 1),
-          ];
+          queue = [...queue.slice(0, state.currentIndex + 1), ...additions, ...queue.slice(state.currentIndex + 1)];
         }
         return { ...state, feedback, queue };
       }
 
       if (action.kind === "down") {
-        // AI refines: drop upcoming tracks by the same artist, then skip
         const artist = SONG_BY_ID[currentId]?.artist;
         const head = queue.slice(0, state.currentIndex + 1);
-        let tail = queue.slice(state.currentIndex + 1);
-        tail = tail.filter((id) => SONG_BY_ID[id]?.artist !== artist);
-        // try to backfill one fresh similar-to-mood track so the session stays full
+        let tail = queue.slice(state.currentIndex + 1).filter((id) => SONG_BY_ID[id]?.artist !== artist);
         const backfill = similarTo(currentId, new Set([...exclude, artist as string]))
           .filter((s) => s.artist !== artist)
           .slice(0, 1)
@@ -153,34 +144,17 @@ function reducer(state: State, action: Action): State {
         queue = [...head, ...tail, ...backfill];
         const nextIndex = state.currentIndex + 1;
         if (nextIndex >= queue.length) {
-          return { ...state, feedback, queue, stage: "summary", isPlaying: false, tab: "discover" };
+          return { ...state, feedback, queue, stage: "summary", tab: "discover", isPlaying: false };
         }
-        return {
-          ...state,
-          feedback,
-          queue,
-          currentIndex: nextIndex,
-          isPlaying: true,
-          playedIds: state.playedIds.includes(queue[nextIndex])
-            ? state.playedIds
-            : [...state.playedIds, queue[nextIndex]],
-        };
+        return { ...state, feedback, queue, currentIndex: nextIndex, isPlaying: true, playedIds: pushPlayed(state.playedIds, queue[nextIndex]) };
       }
 
-      // skip = neutral: just advance
+      // skip = neutral advance
       const nextIndex = state.currentIndex + 1;
       if (nextIndex >= queue.length) {
-        return { ...state, feedback, stage: "summary", isPlaying: false, tab: "discover" };
+        return { ...state, feedback, stage: "summary", tab: "discover", isPlaying: false };
       }
-      return {
-        ...state,
-        feedback,
-        currentIndex: nextIndex,
-        isPlaying: true,
-        playedIds: state.playedIds.includes(queue[nextIndex])
-          ? state.playedIds
-          : [...state.playedIds, queue[nextIndex]],
-      };
+      return { ...state, feedback, currentIndex: nextIndex, isPlaying: true, playedIds: pushPlayed(state.playedIds, queue[nextIndex]) };
     }
 
     case "TOGGLE_SAVE": {
@@ -191,32 +165,45 @@ function reducer(state: State, action: Action): State {
     }
 
     case "END_SESSION":
-      return { ...state, stage: "summary", isPlaying: false };
+      return { ...state, stage: "summary", tab: "discover", isPlaying: false };
 
-    case "NEW_SESSION":
+    case "CLOSE_SUMMARY":
+      return { ...state, stage: "browse" };
+
+    case "NEW_SESSION": {
+      const fresh = buildSession(null, "For you", 0.5, 12);
       return {
         ...state,
-        stage: "home",
-        isPlaying: false,
-        plan: null,
-        queue: [],
-        currentIndex: 0,
-        feedback: {},
-        playedIds: [],
+        stage: "browse",
+        tab: "discover",
         moodId: null,
         moodText: "",
+        moodLabel: "For you",
+        discoveryLevel: 0.5,
+        plan: fresh,
+        queue: fresh.queue,
+        currentIndex: 0,
+        isPlaying: false,
+        feedback: {},
+        playedIds: fresh.queue.length ? [fresh.queue[0]] : [],
       };
+    }
 
     default:
       return state;
   }
 }
 
+interface GenerateOpts {
+  moodId?: string | null;
+  label?: string;
+  discovery?: number;
+}
+
 interface Ctx {
   state: State;
   dispatch: React.Dispatch<Action>;
-  /** builds the session then flips to the player after a short "AI" delay */
-  generateSession: () => void;
+  generateSession: (opts?: GenerateOpts) => void;
 }
 
 const SessionCtx = createContext<Ctx | null>(null);
@@ -224,13 +211,13 @@ const SessionCtx = createContext<Ctx | null>(null);
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const generateSession = () => {
+  const generateSession = (opts?: GenerateOpts) => {
     dispatch({ type: "START_SESSION" });
-    const label = state.moodText.trim() || "Your vibe";
-    const plan = buildSession(state.moodId, label, state.discoveryLevel, 12);
-    window.setTimeout(() => {
-      dispatch({ type: "SESSION_READY", plan });
-    }, 2200);
+    const moodId = opts?.moodId !== undefined ? opts.moodId : state.moodId;
+    const label = (opts?.label ?? state.moodText).trim() || "For you";
+    const discovery = opts?.discovery ?? state.discoveryLevel;
+    const plan = buildSession(moodId, label, discovery, 12);
+    window.setTimeout(() => dispatch({ type: "SESSION_READY", plan }), 2100);
   };
 
   const value = useMemo(() => ({ state, dispatch, generateSession }), [state]);

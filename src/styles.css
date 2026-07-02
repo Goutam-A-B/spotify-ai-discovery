@@ -86,9 +86,14 @@ input { font-family: inherit; }
 
 /* ---------- cover art ---------- */
 .cover { position: relative; flex-shrink: 0; overflow: hidden; box-shadow: 0 8px 22px rgba(0,0,0,.4); }
+.cover__img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; opacity: 0; transition: opacity .35s ease;
+}
+.cover__img.is-loaded { opacity: 1; }
 .cover__sheen {
   position: absolute; inset: 0;
-  background: linear-gradient(160deg, rgba(255,255,255,.18), transparent 42%);
+  background: linear-gradient(160deg, rgba(255,255,255,.14), transparent 42%);
   pointer-events: none;
 }
 .cover--playing { animation: breathe 3.4s ease-in-out infinite; }
@@ -114,6 +119,7 @@ input { font-family: inherit; }
 .dsc__topicons .iconbtn { color: #d0d0d0; }
 
 .dsc__q { font-size: 19px; font-weight: 700; margin: 18px 0 11px; }
+.dsc__attrib { color: var(--muted-2); font-size: 10.5px; text-align: center; margin-top: 22px; line-height: 1.5; padding: 0 10px; }
 
 .moodbar {
   display: flex; align-items: center; gap: 10px;

@@ -3,7 +3,6 @@ import { PlaybackProvider } from "./state/PlaybackContext";
 import { StatusBar } from "./components/StatusBar";
 import { BottomNav } from "./components/BottomNav";
 import { MiniPlayer } from "./components/MiniPlayer";
-import { AudioController } from "./components/AudioController";
 import { Discover } from "./screens/discover/Discover";
 import { Loading } from "./screens/discover/Loading";
 import { Summary } from "./screens/discover/Summary";
@@ -48,18 +47,12 @@ export function App() {
   return (
     <PlaybackProvider>
       <div className="stage">
-        <div className="stage__caption">
-          <span className="stage__dot" />
-          Spotify · AI Discovery — interactive prototype
-        </div>
         <div className="phone">
           <div className="phone__notch" />
           <StatusBar />
           <PhoneContent />
         </div>
-        <p className="stage__hint">Tip: turn sound on — every track plays a mood-tuned audio bed.</p>
       </div>
-      <AudioController />
     </PlaybackProvider>
   );
 }

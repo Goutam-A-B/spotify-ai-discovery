@@ -25,7 +25,7 @@ export interface State {
 
 // Curated default queue so the first screen reads like the design: an
 // atmospheric-indie "now playing" with matching discoveries up next.
-const DEFAULT_QUEUE = ["f1", "f2", "f3", "f4", "f5", "s33", "s30", "s3", "s15", "s22", "s7", "s11"];
+const DEFAULT_QUEUE = ["t19", "t18", "t14", "t9", "t7", "t5", "t8", "t1", "t20", "t21", "t15", "t3"];
 
 const initialState: State = {
   tab: "discover",

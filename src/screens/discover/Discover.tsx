@@ -92,6 +92,8 @@ export function Discover() {
 
       <UpNext />
 
+      <p className="dsc__attrib">Album art & 30-sec previews via Deezer / Apple Music · a concept prototype, not affiliated with Spotify</p>
+
       <MoodInput open={inputOpen} autoVoice={autoVoice} onClose={() => setInputOpen(false)} />
     </div>
   );

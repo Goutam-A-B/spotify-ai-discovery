@@ -173,16 +173,23 @@ input { font-family: inherit; }
 .adv__end-main { font-size: 15px; font-weight: 700; color: var(--green); }
 .adv__end-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
 
-/* learning banner */
-.learn {
-  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
-  background: #161618; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-top: 14px;
+/* subtle "learning" indicator in the header */
+.learnwrap { position: relative; }
+.learnbtn { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; line-height: 1; transition: background .15s ease, transform .12s ease; }
+.learnbtn:active { transform: scale(.9); }
+.learnbtn.is-on { background: rgba(30,215,96,.14); }
+.learnpop {
+  position: absolute; top: 46px; right: 0; width: 232px; z-index: 30;
+  background: #232326; border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px 13px; box-shadow: 0 14px 34px rgba(0,0,0,.55);
+  display: flex; flex-direction: column; gap: 4px; text-align: left; animation: fade .18s ease;
 }
-.learn__spark { color: var(--green); flex-shrink: 0; }
-.learn__body { flex: 1; min-width: 0; }
-.learn__title { font-size: 14px; font-weight: 600; }
-.learn__sub { font-size: 12.5px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
-.learn__cta { font-size: 13px; font-weight: 700; color: #fff; border: 1px solid rgba(255,255,255,.3); padding: 8px 14px; border-radius: 999px; flex-shrink: 0; }
+.learnpop b { font-size: 13px; color: #fff; }
+.learnpop span { font-size: 12px; color: var(--muted); line-height: 1.45; }
+.learnpop::after {
+  content: ""; position: absolute; top: -6px; right: 14px;
+  border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 6px solid #232326;
+}
 
 /* ============================================================
    Now Playing card
@@ -217,16 +224,16 @@ input { font-family: inherit; }
 .np__similar b { color: var(--green); font-weight: 600; }
 .np__eq { color: var(--green); flex-shrink: 0; }
 
-.np__actions { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.np__actions { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; flex-shrink: 0; }
+.np__actions-row { display: flex; align-items: center; gap: 12px; }
 .np__icon { color: var(--muted); transition: color .15s ease, transform .12s ease; }
 .np__icon:active { transform: scale(1.15); }
 .np__icon.is-on { color: var(--green); }
 
 .np__save {
-  align-self: flex-end; margin-top: 12px;
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 9px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,.28);
-  font-size: 13.5px; font-weight: 700; color: #fff; transition: background .15s ease;
+  padding: 8px 15px; border-radius: 999px; border: 1px solid rgba(255,255,255,.28);
+  font-size: 13px; font-weight: 700; color: #fff; transition: background .15s ease; white-space: nowrap;
 }
 .np__save:active { background: rgba(255,255,255,.1); }
 .np__save--on { border-color: var(--green); color: var(--green); }

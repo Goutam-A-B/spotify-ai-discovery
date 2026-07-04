@@ -5,7 +5,7 @@ import { AlbumArt } from "./AlbumArt";
 const BADGE: Record<Familiarity, { text: string; cls: string }> = {
   new: { text: "NEW", cls: "badge--new" },
   adjacent: { text: "SIMILAR", cls: "badge--adj" },
-  familiar: { text: "FAVE", cls: "badge--fam" },
+  familiar: { text: "LIKED", cls: "badge--fam" },
 };
 
 export function UpNext() {
@@ -18,9 +18,7 @@ export function UpNext() {
     <section className="upnext">
       <div className="upnext__head">
         <span className="upnext__label">UP NEXT</span>
-        <button className="upnext__preview" onClick={() => dispatch({ type: "NEXT" })}>
-          Preview
-        </button>
+        <span className="upnext__count">{upNext.length} tracks</span>
       </div>
 
       <div className="upnext__row">

@@ -5,13 +5,13 @@ import { AdventureSlider } from "../../components/AdventureSlider";
 import { NowPlaying } from "../../components/NowPlaying";
 import { UpNext } from "../../components/UpNext";
 import { MoodInput } from "./MoodInput";
-import { SparkleIcon, MicIcon, GearIcon, ClockIcon } from "../../components/icons";
+import { SparkleIcon, MicIcon, ClockIcon } from "../../components/icons";
 
 export function Discover() {
   const { state, dispatch, generateSession } = useSession();
   const [inputOpen, setInputOpen] = useState(false);
   const [autoVoice, setAutoVoice] = useState(false);
-  const [learnMore, setLearnMore] = useState(false);
+  const [learnOpen, setLearnOpen] = useState(false);
 
   const openInput = (voice = false) => {
     setAutoVoice(voice);
@@ -33,11 +33,24 @@ export function Discover() {
           </div>
         </div>
         <div className="dsc__topicons">
+          {/* subtle "it's learning" indicator — tap to reveal */}
+          <div className="learnwrap">
+            <button
+              className={"learnbtn" + (learnOpen ? " is-on" : "")}
+              aria-label="How discovery learns"
+              onClick={() => setLearnOpen((v) => !v)}
+            >
+              🧠
+            </button>
+            {learnOpen && (
+              <div className="learnpop" role="status">
+                <b>Learning your taste</b>
+                <span>Every love, skip and save re-weights what plays next. The more you listen, the better it gets.</span>
+              </div>
+            )}
+          </div>
           <button className="iconbtn" aria-label="Session recap" onClick={() => dispatch({ type: "END_SESSION" })}>
             <ClockIcon size={22} />
-          </button>
-          <button className="iconbtn" aria-label="New session" onClick={() => dispatch({ type: "NEW_SESSION" })}>
-            <GearIcon size={22} />
           </button>
         </div>
       </header>
@@ -75,24 +88,9 @@ export function Discover() {
 
       <AdventureSlider />
 
-      <button className={"learn" + (learnMore ? " learn--open" : "")} onClick={() => setLearnMore((v) => !v)}>
-        <span className="learn__spark"><SparkleIcon size={20} /></span>
-        <div className="learn__body">
-          <div className="learn__title">Discover Session is learning your taste…</div>
-          <div className="learn__sub">
-            {learnMore
-              ? "Every Love, More-like-this, skip and save re-weights what plays next. The dial sets how far we roam from your favorites."
-              : "The more you listen, the better it gets."}
-          </div>
-        </div>
-        <span className="learn__cta">{learnMore ? "Close" : "Learn more"}</span>
-      </button>
-
       <NowPlaying />
 
       <UpNext />
-
-      <p className="dsc__attrib">Album art & 30-sec previews via Deezer / Apple Music · a concept prototype, not affiliated with Spotify</p>
 
       <MoodInput open={inputOpen} autoVoice={autoVoice} onClose={() => setInputOpen(false)} />
     </div>

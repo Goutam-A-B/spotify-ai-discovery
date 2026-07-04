@@ -88,26 +88,27 @@ export function NowPlaying() {
         </div>
 
         <div className="np__actions">
+          <div className="np__actions-row">
+            <button
+              className={"np__icon" + (saved ? " is-on" : "")}
+              onClick={() => dispatch({ type: "TOGGLE_SAVE", id: song.id })}
+              aria-label={saved ? "Remove from Liked" : "Add to Liked"}
+            >
+              <HeartIcon size={22} filled={saved} />
+            </button>
+            <button className="np__icon" aria-label="Details" onClick={() => setExpandWhy((e) => !e)}>
+              <MoreIcon size={22} />
+            </button>
+          </div>
           <button
-            className={"np__icon" + (saved ? " is-on" : "")}
+            className={"np__save" + (saved ? " np__save--on" : "")}
             onClick={() => dispatch({ type: "TOGGLE_SAVE", id: song.id })}
-            aria-label={saved ? "Remove from Liked" : "Add to Liked"}
           >
-            <HeartIcon size={22} filled={saved} />
-          </button>
-          <button className="np__icon" aria-label="Details" onClick={() => setExpandWhy((e) => !e)}>
-            <MoreIcon size={22} />
+            {saved ? <CheckIcon size={16} /> : <PlusIcon size={16} />}
+            {saved ? "Saved" : "Save"}
           </button>
         </div>
       </div>
-
-      <button
-        className={"np__save" + (saved ? " np__save--on" : "")}
-        onClick={() => dispatch({ type: "TOGGLE_SAVE", id: song.id })}
-      >
-        {saved ? <CheckIcon size={16} /> : <PlusIcon size={16} />}
-        {saved ? "Saved" : "Save"}
-      </button>
 
       {/* Why this song? */}
       <button className="why" onClick={() => setExpandWhy((e) => !e)}>

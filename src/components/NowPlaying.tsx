@@ -5,8 +5,6 @@ import { AlbumArt } from "./AlbumArt";
 import {
   HeartIcon,
   MoreIcon,
-  PlusIcon,
-  CheckIcon,
   PlayIcon,
   PauseIcon,
   SkipIcon,
@@ -78,36 +76,29 @@ export function NowPlaying() {
           <div className="np__genre">
             {song.genre ?? pretty(song.tags[0])} • {song.year ?? song.language}
           </div>
-          <div className="np__similar">
-            <SoundBars size={13} className="np__eq" />
-            <span>
-              Similar energy to your <b>{song.similarArtists[0]}</b>
-              {song.similarArtists[1] ? <> and <b>{song.similarArtists[1]}</b></> : null}
-            </span>
-          </div>
         </div>
 
         <div className="np__actions">
-          <div className="np__actions-row">
-            <button
-              className={"np__icon" + (saved ? " is-on" : "")}
-              onClick={() => dispatch({ type: "TOGGLE_SAVE", id: song.id })}
-              aria-label={saved ? "Remove from Liked" : "Add to Liked"}
-            >
-              <HeartIcon size={22} filled={saved} />
-            </button>
-            <button className="np__icon" aria-label="Details" onClick={() => setExpandWhy((e) => !e)}>
-              <MoreIcon size={22} />
-            </button>
-          </div>
           <button
-            className={"np__save" + (saved ? " np__save--on" : "")}
+            className={"np__icon" + (saved ? " is-on" : "")}
             onClick={() => dispatch({ type: "TOGGLE_SAVE", id: song.id })}
+            aria-label={saved ? "Remove from Liked" : "Add to Liked"}
           >
-            {saved ? <CheckIcon size={16} /> : <PlusIcon size={16} />}
-            {saved ? "Saved" : "Save"}
+            <HeartIcon size={22} filled={saved} />
+          </button>
+          <button className="np__icon" aria-label="Details" onClick={() => setExpandWhy((e) => !e)}>
+            <MoreIcon size={22} />
           </button>
         </div>
+      </div>
+
+      {/* the briefing line — full width so it always aligns cleanly */}
+      <div className="np__similar">
+        <SoundBars size={13} className="np__eq" />
+        <span>
+          Similar energy to your <b>{song.similarArtists[0]}</b>
+          {song.similarArtists[1] ? <> and <b>{song.similarArtists[1]}</b></> : null}
+        </span>
       </div>
 
       {/* Why this song? */}
